@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, Settings, Users } from "lucide-react";
+import { House, Settings, ShieldCheck, Users } from "lucide-react";
 
 import { AccountMenu } from "@/components/account-menu";
 import {
@@ -44,12 +44,14 @@ export function AppSidebar({
   email,
   hasPassword,
   hasDiscord,
+  isAdmin,
   version,
 }: {
   teams: TeamMembership[];
   email: string;
   hasPassword: boolean;
   hasDiscord: boolean;
+  isAdmin: boolean;
   version: string;
 }) {
   const pathname = usePathname();
@@ -132,6 +134,18 @@ export function AppSidebar({
           <SidebarMenuItem className="hidden justify-center group-data-[collapsible=icon]:flex">
             <SidebarTrigger title="Expandir menu" />
           </SidebarMenuItem>
+          {isAdmin && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={pathname.startsWith("/admin")}
+                tooltip="Administração"
+                render={<Link href="/admin" />}
+              >
+                <ShieldCheck />
+                <span>Administração</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <AccountMenu
               email={email}

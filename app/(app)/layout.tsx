@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import packageJson from "@/package.json";
 import { createClient } from "@/lib/supabase/server";
 import { getUserTeams } from "@/lib/teams/queries";
+import { isAdmin } from "@/lib/admin/queries";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
@@ -28,7 +29,10 @@ export default async function AppLayout({
     user.user_metadata?.has_password === true ||
     (user.identities?.some((i) => i.provider === "email") ?? false);
 
-  const teams = await getUserTeams(user.id);
+  const [teams, userIsAdmin] = await Promise.all([
+    getUserTeams(user.id),
+    isAdmin(user.id),
+  ]);
 
   return (
     <SidebarProvider>
@@ -37,6 +41,7 @@ export default async function AppLayout({
         email={user.email ?? ""}
         hasPassword={hasPassword}
         hasDiscord={hasDiscord}
+        isAdmin={userIsAdmin}
         version={packageJson.version}
       />
       <SidebarInset>
