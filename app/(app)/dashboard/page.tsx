@@ -1,3 +1,8 @@
+import { createClient } from "@/lib/supabase/server";
+import { getNextUpcomingRace, getPastRaces } from "@/lib/races/queries";
+import { NextRaceCard } from "@/components/races/next-race-card";
+import { PastRacesList } from "@/components/races/past-races-list";
+
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -5,8 +10,23 @@ export default async function DashboardPage({
 }) {
   const { error, reason } = await searchParams;
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const displayName =
+    user?.user_metadata?.full_name ??
+    user?.user_metadata?.name ??
+    user?.email?.split("@")[0] ??
+    "piloto";
+
+  const [nextRace, pastRaces] = user
+    ? await Promise.all([getNextUpcomingRace(user.id), getPastRaces(user.id)])
+    : [null, []];
+
   return (
-    <div className="flex flex-1 flex-col gap-2">
+    <div className="flex flex-1 flex-col gap-6">
       {error === "discord_link" && (
         <p className="text-sm text-destructive">
           {reason === "identity_already_exists"
@@ -14,10 +34,24 @@ export default async function DashboardPage({
             : "Não foi possível vincular sua conta do Discord. Tente de novo."}
         </p>
       )}
-      <h1 className="text-2xl font-semibold tracking-tight">Provas</h1>
-      <p className="text-sm text-muted-foreground">
-        Nenhuma prova cadastrada ainda.
-      </p>
+
+      <h1 className="text-2xl font-semibold tracking-tight">
+        Olá, {displayName}!
+      </h1>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium tracking-tight">
+          Próximas Corridas
+        </h2>
+        <NextRaceCard race={nextRace} />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium tracking-tight">
+          Corridas Passadas
+        </h2>
+        <PastRacesList races={pastRaces} />
+      </section>
     </div>
   );
 }

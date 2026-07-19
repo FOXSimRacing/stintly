@@ -22,8 +22,8 @@ import {
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: House },
-  { href: "/roster", label: "Elenco", icon: Users },
-  { href: "/settings", label: "Time", icon: Settings },
+  // { href: "/roster", label: "Elenco", icon: Users },
+  // { href: "/settings", label: "Time", icon: Settings },
 ];
 
 type TeamMembership = {
