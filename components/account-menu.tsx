@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { ChevronsUpDown, Monitor, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import { logout } from "@/app/(app)/actions";
 import { useDiscordOAuth } from "@/app/(auth)/discord-button";
@@ -12,9 +14,15 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 export function AccountMenu({
   email,
@@ -28,17 +36,27 @@ export function AccountMenu({
   const [isPending, startTransition] = useTransition();
   const [setPasswordOpen, setSetPasswordOpen] = useState(false);
   const discordLink = useDiscordOAuth("link", "/dashboard");
+  const { theme, setTheme } = useTheme();
   const initials = email.slice(0, 2).toUpperCase();
 
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Avatar className="h-8 w-8 cursor-pointer">
-            <AvatarFallback>{initials}</AvatarFallback>
+        <DropdownMenuTrigger
+          render={
+            <SidebarMenuButton
+              size="lg"
+              className="data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground"
+            />
+          }
+        >
+          <Avatar className="h-8 w-8 rounded-lg">
+            <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
           </Avatar>
+          <span className="flex-1 truncate text-left text-sm">{email}</span>
+          <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-auto max-w-80">
+        <DropdownMenuContent align="end" side="top" className="w-(--anchor-width) min-w-56">
           <DropdownMenuGroup>
             <DropdownMenuLabel
               title={email}
@@ -47,6 +65,32 @@ export function AccountMenu({
               {email}
             </DropdownMenuLabel>
           </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              {theme === "dark" ? (
+                <Moon />
+              ) : theme === "light" ? (
+                <Sun />
+              ) : (
+                <Monitor />
+              )}
+              Tema
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+                <DropdownMenuRadioItem value="light">
+                  <Sun /> Claro
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="dark">
+                  <Moon /> Escuro
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="system">
+                  <Monitor /> Sistema
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
           <DropdownMenuSeparator />
           {!hasPassword && (
             <DropdownMenuItem onClick={() => setSetPasswordOpen(true)}>

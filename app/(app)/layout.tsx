@@ -1,7 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import packageJson from "@/package.json";
 import { createClient } from "@/lib/supabase/server";
-import { AccountMenu } from "@/components/account-menu";
+import { getUserTeams } from "@/lib/teams/queries";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default async function AppLayout({
   children,
@@ -26,30 +28,20 @@ export default async function AppLayout({
     user.user_metadata?.has_password === true ||
     (user.identities?.some((i) => i.provider === "email") ?? false);
 
+  const teams = await getUserTeams(user.id);
+
   return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <header className="flex h-14 items-center justify-between border-b px-6">
-        <Link href="/dashboard" className="text-sm font-semibold tracking-tight">
-          Stintly
-        </Link>
-        <nav className="flex items-center gap-6 text-sm text-muted-foreground">
-          <Link href="/dashboard" className="hover:text-foreground">
-            Provas
-          </Link>
-          <Link href="/roster" className="hover:text-foreground">
-            Elenco
-          </Link>
-          <Link href="/settings" className="hover:text-foreground">
-            Time
-          </Link>
-        </nav>
-        <AccountMenu
-          email={user.email ?? ""}
-          hasPassword={hasPassword}
-          hasDiscord={hasDiscord}
-        />
-      </header>
-      <main className="flex flex-1 flex-col p-6">{children}</main>
-    </div>
+    <SidebarProvider>
+      <AppSidebar
+        teams={teams}
+        email={user.email ?? ""}
+        hasPassword={hasPassword}
+        hasDiscord={hasDiscord}
+        version={packageJson.version}
+      />
+      <SidebarInset>
+        <main className="flex flex-1 flex-col p-6">{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
