@@ -64,24 +64,6 @@ with the user first if it's ambiguous whether remaining sub-items (e.g. "OAuth
 Discord" inside an otherwise-done auth issue) should split into a new issue
 or stay open under the current one.
 
-**But when it genuinely is complete, close it as part of finishing the
-work — don't leave a done issue sitting open.** Two paths:
-
-- Normally this happens automatically: the PR that finished the work used
-  `Closes #<n>` in its body, so the issue closes the moment the user
-  approves the merge (see below). No separate action needed once that
-  merge happens — just confirm it actually closed.
-- If for some reason the work is done without a `Closes`-linked PR (e.g. the
-  issue turned out to already be satisfied by something else), close it
-  manually with a comment explaining why:
-  ```bash
-  gh issue close <n> --repo FOXSimRacing/stintly --comment "..."
-  ```
-
-Add extra closing comments whenever they add context beyond what the PR
-diff already shows (e.g. how it was verified, what was deliberately left
-out of scope).
-
 **Comment right after every commit/push that touches an issue's scope** —
 don't wait until the whole feature is finished. A commit changes the issue's
 real state (code is now in shared history, not just local work) even when
