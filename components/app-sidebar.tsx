@@ -17,6 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 const navItems = [
@@ -56,27 +57,30 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              className="hover:bg-transparent active:bg-transparent"
-              render={<Link href="/dashboard" />}
-            >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground">
-                S
-              </span>
-              <span className="flex flex-col leading-none">
-                <span className="text-sm font-semibold tracking-tight">
-                  Stintly
+        <div className="flex items-center gap-1">
+          <SidebarMenu className="min-w-0 flex-1">
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                size="lg"
+                className="w-auto hover:bg-transparent active:bg-transparent"
+                render={<Link href="/dashboard" />}
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground">
+                  S
                 </span>
-                <span className="text-xs text-muted-foreground">
-                  v{version}
+                <span className="flex flex-col leading-none">
+                  <span className="text-sm font-semibold tracking-tight">
+                    Stintly
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    v{version}
+                  </span>
                 </span>
-              </span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+          <SidebarTrigger className="shrink-0 group-data-[collapsible=icon]:hidden" />
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

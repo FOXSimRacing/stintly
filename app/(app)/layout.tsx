@@ -3,11 +3,7 @@ import packageJson from "@/package.json";
 import { createClient } from "@/lib/supabase/server";
 import { getUserTeams } from "@/lib/teams/queries";
 import { AppSidebar } from "@/components/app-sidebar";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default async function AppLayout({
   children,
@@ -44,9 +40,6 @@ export default async function AppLayout({
         version={packageJson.version}
       />
       <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger />
-        </header>
         <main className="flex flex-1 flex-col p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
