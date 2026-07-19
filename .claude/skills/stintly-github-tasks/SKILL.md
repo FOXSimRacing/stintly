@@ -1,6 +1,6 @@
 ---
 name: stintly-github-tasks
-description: Use when creating, updating, or triaging GitHub issues for Stintly (FOXSimRacing/stintly) — the canonical task tracker for this project, with required metadata (label, type, assignee, milestone) on every issue.
+description: Use when creating/updating GitHub issues, committing code, or opening PRs for Stintly (FOXSimRacing/stintly) — issues are the canonical task tracker, and every commit ships through a branch + PR linked to one, never a direct push to main.
 ---
 
 # Managing Stintly's tasks on GitHub
@@ -64,11 +64,33 @@ with the user first if it's ambiguous whether remaining sub-items (e.g. "OAuth
 Discord" inside an otherwise-done auth issue) should split into a new issue
 or stay open under the current one.
 
-**Comment right after every commit/push that touches an issue's scope** —
-don't wait until the whole feature is finished. A commit changes the issue's
-real state (code is now in shared history, not just local work) even when
-the issue itself stays open; that state change belongs in the issue the
-moment it happens, e.g. "Commitado e pushado pra `main` em `<sha>`."
+## Never push directly to `main` — always branch + PR, linked to an issue
+
+1. **Find or create the issue first**, with the full metadata above (label,
+   type, assignee, milestone), before writing any code for it.
+2. **Branch off `main`** — don't commit on `main` itself:
+   ```bash
+   git checkout -b feat/<issue-number>-<short-slug> main
+   ```
+   Prefix by the issue's type: `feat/` for Feature, `fix/` for Bug, `chore/`
+   for Task.
+3. Commit on that branch as normal.
+4. **Push the branch and open a PR linked to the issue** — never
+   `git push origin main`:
+   ```bash
+   git push -u origin feat/<issue-number>-<short-slug>
+   gh pr create --repo FOXSimRacing/stintly --base main \
+     --title "..." --body "Closes #<n>"
+   ```
+   Use `Closes #<n>` (auto-closes the issue on merge) only when the PR fully
+   resolves the issue's scope. For partial progress toward a larger issue,
+   reference it without the closing keyword (e.g. "Part of #<n>") so the
+   issue stays open after merge — same judgment call as the "recording
+   progress" section above, just expressed via the PR body instead of (or
+   alongside) a comment.
+5. **Never merge the PR without the user's explicit go-ahead.** Opening the
+   PR is standing-authorized by this workflow; merging into `main` is a
+   separate, always-confirmed step.
 
 ## Before calling GitHub issue work done
 
