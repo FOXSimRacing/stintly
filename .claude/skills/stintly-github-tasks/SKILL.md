@@ -93,19 +93,21 @@ out of scope).
    Prefix by the issue's type: `feat/` for Feature, `fix/` for Bug, `chore/`
    for Task.
 3. Commit on that branch as normal.
-4. **Push the branch and open a PR linked to the issue** — never
-   `git push origin main`:
+4. **Push the branch and open a PR linked to the issue, with an assignee** —
+   never `git push origin main`, and never leave a PR unassigned:
    ```bash
    git push -u origin feat/<issue-number>-<short-slug>
    gh pr create --repo FOXSimRacing/stintly --base main \
      --title "..." --body "Closes #<n>"
+   gh pr edit <pr-number> --repo FOXSimRacing/stintly --add-assignee gusribeiro
    ```
    Use `Closes #<n>` (auto-closes the issue on merge) only when the PR fully
    resolves the issue's scope. For partial progress toward a larger issue,
    reference it without the closing keyword (e.g. "Part of #<n>") so the
    issue stays open after merge — same judgment call as the "recording
    progress" section above, just expressed via the PR body instead of (or
-   alongside) a comment.
+   alongside) a comment. The assignee is whoever did the work in the PR —
+   same person as the linked issue's assignee, in practice.
 5. **Never merge the PR without the user's explicit go-ahead.** Opening the
    PR is standing-authorized by this workflow; merging into `main` is a
    separate, always-confirmed step.
