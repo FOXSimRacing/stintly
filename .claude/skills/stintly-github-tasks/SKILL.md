@@ -64,6 +64,12 @@ with the user first if it's ambiguous whether remaining sub-items (e.g. "OAuth
 Discord" inside an otherwise-done auth issue) should split into a new issue
 or stay open under the current one.
 
+**Comment right after every commit/push that touches an issue's scope** —
+don't wait until the whole feature is finished. A commit changes the issue's
+real state (code is now in shared history, not just local work) even when
+the issue itself stays open; that state change belongs in the issue the
+moment it happens, e.g. "Commitado e pushado pra `main` em `<sha>`."
+
 ## Before calling GitHub issue work done
 
 Re-check all four fields on every issue you touched this session — it's easy
