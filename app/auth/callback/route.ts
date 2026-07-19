@@ -15,6 +15,21 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`);
     }
+
+    // If a session already exists, this was a link-identity flow (the user
+    // was authenticated before this redirect) rather than a sign-in — bounce
+    // back into the app with the error instead of /login, since an
+    // authenticated user hitting /login is redirected straight to /dashboard
+    // by app/(auth)/layout.tsx, which would silently drop this error.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const failureUrl = new URL(next, origin);
+      failureUrl.searchParams.set("error", "discord_link");
+      failureUrl.searchParams.set("reason", error.code ?? "unknown");
+      return NextResponse.redirect(failureUrl);
+    }
   }
 
   return NextResponse.redirect(`${origin}/login?error=oauth`);
