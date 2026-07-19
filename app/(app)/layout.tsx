@@ -1,6 +1,9 @@
+import { eq } from "drizzle-orm";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { teamMembers } from "@/drizzle/schema";
 import { AccountMenu } from "@/components/account-menu";
 
 export default async function AppLayout({
@@ -15,6 +18,16 @@ export default async function AppLayout({
 
   if (!user) {
     redirect("/login");
+  }
+
+  const [membership] = await db
+    .select({ id: teamMembers.id })
+    .from(teamMembers)
+    .where(eq(teamMembers.userId, user.id))
+    .limit(1);
+
+  if (!membership) {
+    redirect("/onboarding");
   }
 
   const hasDiscord =

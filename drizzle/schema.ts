@@ -54,6 +54,9 @@ export const teams = pgTable("teams", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
+  // Nullable: set when the team was created by picking from the iRacing
+  // team list; null for teams created via the manual-name fallback.
+  iracingTeamId: integer("iracing_team_id"),
   createdBy: uuid("created_by")
     .notNull()
     .references(() => authUsers.id, { onDelete: "restrict" }),
