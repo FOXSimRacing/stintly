@@ -1,11 +1,16 @@
 import { z } from "zod";
 
+// Blank env var declarations (`KEY=`, the .env.example placeholder
+// convention) load as an empty string, not undefined — treat those as
+// absent too, so an unfilled-in .env.local/.env doesn't crash app boot.
+const emptyToUndefined = (value: unknown) => (value === "" ? undefined : value);
+
 const rawSchema = z.object({
-  IRACING_USE_MOCK: z.enum(["true", "false"]).optional(),
-  IRACING_OAUTH_CLIENT_ID: z.string().optional(),
-  IRACING_OAUTH_CLIENT_SECRET: z.string().optional(),
-  IRACING_OAUTH_REDIRECT_URI: z.string().url().optional(),
-  IRACING_OAUTH_REFRESH_TOKEN: z.string().optional(),
+  IRACING_USE_MOCK: z.preprocess(emptyToUndefined, z.enum(["true", "false"]).optional()),
+  IRACING_OAUTH_CLIENT_ID: z.preprocess(emptyToUndefined, z.string().optional()),
+  IRACING_OAUTH_CLIENT_SECRET: z.preprocess(emptyToUndefined, z.string().optional()),
+  IRACING_OAUTH_REDIRECT_URI: z.preprocess(emptyToUndefined, z.string().url().optional()),
+  IRACING_OAUTH_REFRESH_TOKEN: z.preprocess(emptyToUndefined, z.string().optional()),
 });
 
 const raw = rawSchema.parse({
@@ -23,14 +28,27 @@ const hasRealCredentials = Boolean(
     raw.IRACING_OAUTH_REFRESH_TOKEN,
 );
 
+// Mocking is a local-dev-only concept: MSW patches fetch/http globally for
+// the whole process, so it must never run in any Vercel-deployed
+// environment (preview or production) — see instrumentation.ts, which also
+// independently refuses to start on Vercel as defense in depth. `VERCEL` is
+// set to "1" in every Vercel build/runtime, unset on a developer's machine.
+const isVercel = Boolean(process.env.VERCEL);
+
 const useMock =
   raw.IRACING_USE_MOCK === "false"
     ? false
     : raw.IRACING_USE_MOCK === "true"
       ? true
-      : !hasRealCredentials;
+      : !isVercel && !hasRealCredentials;
 
-if (!useMock && !hasRealCredentials) {
+// Only hard-fail app boot when mocking was EXPLICITLY turned off without
+// complete credentials — a deliberate misconfiguration worth crashing loud
+// on. Never crash boot just because Vercel has no iRacing credentials yet
+// with no explicit opt-out: nothing consumes lib/iracing today, so that
+// should only fail if/when something actually calls it (client.ts throws
+// IracingAuthError at call time in that case).
+if (raw.IRACING_USE_MOCK === "false" && !hasRealCredentials) {
   throw new Error(
     "IRACING_USE_MOCK=false but IRACING_OAUTH_CLIENT_ID/SECRET/REDIRECT_URI/REFRESH_TOKEN " +
       "are not all set. Either finish configuring real iRacing OAuth2 credentials or remove " +
