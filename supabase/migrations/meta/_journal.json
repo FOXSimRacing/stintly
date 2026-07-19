@@ -15,6 +15,13 @@
       "when": 1784433783221,
       "tag": "0001_rls_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784478000000,
+      "tag": "0002_fix_teams_select_policy",
+      "breakpoints": true
     }
   ]
 }
