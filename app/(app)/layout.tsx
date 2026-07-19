@@ -17,6 +17,15 @@ export default async function AppLayout({
     redirect("/login");
   }
 
+  const hasDiscord =
+    user.identities?.some((i) => i.provider === "discord") ?? false;
+  // updateUser({ password }) doesn't add an "email" identities entry (that
+  // only happens via signup), so we also check the has_password metadata
+  // flag stamped by app/(app)/actions.ts's setPassword action.
+  const hasPassword =
+    user.user_metadata?.has_password === true ||
+    (user.identities?.some((i) => i.provider === "email") ?? false);
+
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <header className="flex h-14 items-center justify-between border-b px-6">
@@ -34,7 +43,11 @@ export default async function AppLayout({
             Time
           </Link>
         </nav>
-        <AccountMenu email={user.email ?? ""} />
+        <AccountMenu
+          email={user.email ?? ""}
+          hasPassword={hasPassword}
+          hasDiscord={hasDiscord}
+        />
       </header>
       <main className="flex flex-1 flex-col p-6">{children}</main>
     </div>
