@@ -129,6 +129,9 @@ export function AppSidebar({
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem className="hidden justify-center group-data-[collapsible=icon]:flex">
+            <SidebarTrigger title="Expandir menu" />
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <AccountMenu
               email={email}
