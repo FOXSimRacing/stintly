@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, Settings, ShieldCheck, Users } from "lucide-react";
+import { House, PanelLeftIcon, ShieldCheck } from "lucide-react";
 
 import { AccountMenu } from "@/components/account-menu";
 import {
@@ -17,7 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 const navItems = [
@@ -55,34 +55,33 @@ export function AppSidebar({
   version: string;
 }) {
   const pathname = usePathname();
+  const { state, toggleSidebar } = useSidebar();
+  const toggleLabel = state === "expanded" ? "Recolher menu" : "Expandir menu";
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-1">
-          <SidebarMenu className="min-w-0 flex-1">
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                size="lg"
-                className="w-auto hover:bg-transparent active:bg-transparent"
-                render={<Link href="/dashboard" />}
-              >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground">
-                  S
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              className="w-auto hover:bg-transparent active:bg-transparent"
+              render={<Link href="/dashboard" />}
+            >
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground">
+                S
+              </span>
+              <span className="flex flex-col leading-none">
+                <span className="text-sm font-semibold tracking-tight">
+                  Stintly
                 </span>
-                <span className="flex flex-col leading-none">
-                  <span className="text-sm font-semibold tracking-tight">
-                    Stintly
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    v{version}
-                  </span>
+                <span className="text-xs text-muted-foreground">
+                  v{version}
                 </span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-          <SidebarTrigger className="shrink-0 group-data-[collapsible=icon]:hidden" />
-        </div>
+              </span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -100,6 +99,18 @@ export function AppSidebar({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={pathname.startsWith("/admin")}
+                    tooltip="Admin"
+                    render={<Link href="/admin" />}
+                  >
+                    <ShieldCheck />
+                    <span>Admin</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -131,21 +142,12 @@ export function AppSidebar({
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem className="hidden justify-center group-data-[collapsible=icon]:flex">
-            <SidebarTrigger title="Expandir menu" />
+          <SidebarMenuItem>
+            <SidebarMenuButton tooltip={toggleLabel} onClick={toggleSidebar}>
+              <PanelLeftIcon />
+              <span>{toggleLabel}</span>
+            </SidebarMenuButton>
           </SidebarMenuItem>
-          {isAdmin && (
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={pathname.startsWith("/admin")}
-                tooltip="Administração"
-                render={<Link href="/admin" />}
-              >
-                <ShieldCheck />
-                <span>Administração</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
           <SidebarMenuItem>
             <AccountMenu
               email={email}
