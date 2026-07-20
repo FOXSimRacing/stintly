@@ -28,19 +28,20 @@ const hasRealCredentials = Boolean(
     raw.IRACING_OAUTH_REFRESH_TOKEN,
 );
 
-// Mocking is a local-dev-only concept: MSW patches fetch/http globally for
-// the whole process, so it must never run in any Vercel-deployed
-// environment (preview or production) — see instrumentation.ts, which also
-// independently refuses to start on Vercel as defense in depth. `VERCEL` is
-// set to "1" in every Vercel build/runtime, unset on a developer's machine.
-const isVercel = Boolean(process.env.VERCEL);
+// Mocking is a local-dev-and-preview concept, never production: MSW patches
+// fetch/http globally for the whole process, so it must never run where
+// real user traffic lands — see instrumentation.ts, which also
+// independently refuses to start in production as defense in depth.
+// `VERCEL_ENV` is "production" | "preview" | "development" on Vercel,
+// unset on a developer's machine.
+const isProductionVercel = process.env.VERCEL_ENV === "production";
 
 const useMock =
   raw.IRACING_USE_MOCK === "false"
     ? false
     : raw.IRACING_USE_MOCK === "true"
       ? true
-      : !isVercel && !hasRealCredentials;
+      : !isProductionVercel && !hasRealCredentials;
 
 // Only hard-fail app boot when mocking was EXPLICITLY turned off without
 // complete credentials — a deliberate misconfiguration worth crashing loud

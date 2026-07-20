@@ -1,18 +1,21 @@
 // Starts the iRacing Data API mock server once per Node.js server instance,
-// before it accepts requests, on a developer's own machine, whenever no real
-// iRacing OAuth2 credentials are configured. See
-// .claude/skills/stintly-iracing-data-api/SKILL.md.
+// before it accepts requests, on a developer's own machine or a Vercel
+// Preview deployment, whenever no real iRacing OAuth2 credentials are
+// configured. See .claude/skills/stintly-iracing-data-api/SKILL.md.
 export async function register() {
   // MSW's node interceptor only makes sense in the Node.js runtime.
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
   // MSW patches fetch/http globally for the whole process — not just
-  // iRacing hosts. Never let it start on Vercel (preview or production):
-  // it would intercept unrelated requests too (e.g. Supabase auth calls
-  // from Server Actions) and reject them as "unhandled". `VERCEL` is set to
-  // "1" in every Vercel build/runtime, unset locally — see the incident
-  // where this exact gap broke login in preview/production.
-  if (process.env.VERCEL) return;
+  // iRacing hosts. Never let it start in production: it would intercept
+  // unrelated requests too (e.g. Supabase auth calls from Server Actions).
+  // Preview and local dev are fine — the onUnhandledRequest callback below
+  // only logs on iRacing-hostname misses and passes everything else
+  // through untouched, which is what makes this safe (see the incident
+  // where a stricter "error" preset broke login in preview/production;
+  // that's fixed independently of this environment check). `VERCEL_ENV` is
+  // "production" | "preview" | "development" on Vercel, unset locally.
+  if (process.env.VERCEL_ENV === "production") return;
 
   const { iracingEnv } = await import("@/lib/iracing/env");
   if (!iracingEnv.useMock) return;

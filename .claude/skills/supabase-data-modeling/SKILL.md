@@ -44,10 +44,26 @@ For a genuinely new top-level entity, always add both:
 
 Fuel, tire, and weather planning are explicitly future modules (see the iracing-endurance-domain skill). When they land, add new tables keyed by `stint_id` or `race_id` (e.g. `fuel_stint_detail(stint_id, ...)`, `tire_stint_detail(stint_id, ...)`, `weather_window(race_id, start_offset_minutes, end_offset_minutes, ...)`). Never add fuel/tire/weather columns directly onto `stints` or `races` — that couples unrelated modules and makes the core stint-planning schema harder to reason about.
 
+## Two Supabase projects: apply every migration to both
+
+As of 2026-07-19, `stintly-staging` (local dev + intended for Vercel
+Preview) and production are **separate Supabase projects** with
+independently-applied migrations — see the "Which Supabase project" note in
+the `stintly-qa-testing` skill. There is no Docker/local Postgres in this
+repo (`supabase/config.toml` doesn't exist) despite `supabase db reset`
+being the traditional local-Supabase workflow — in practice, "apply
+locally" means pushing to the `stintly-staging` project over the network,
+the same way production is pushed to.
+
 ## Workflow for a schema change
 
 1. Edit `drizzle/schema.ts`.
 2. `npx drizzle-kit generate` — creates a new numbered `.sql` file in `supabase/migrations/`.
 3. Check the generated SQL for the `auth.users` gotcha above.
 4. If the change needs new/updated RLS policies, add them as a separate hand-written migration file (`000N_description.sql`) immediately after the generated one — don't try to express policies inside `schema.ts`.
-5. Apply locally with `supabase db reset` and verify cross-team access is actually blocked before merging (see the plan's verification section for the two-user test).
+5. Apply to `stintly-staging` first and verify cross-team access is actually blocked before merging (see the plan's verification section for the two-user test):
+   ```bash
+   npx supabase db push --db-url "<stintly-staging pooler connection string>" --yes
+   ```
+   (Prefer the session pooler host over the direct `db.<ref>.supabase.co` connection — the latter has had intermittent DNS resolution failures on some networks.)
+6. Once verified, apply the same migration(s) to production the same way, with production's own connection string. Never skip this — the two projects drift if a migration only lands on one.

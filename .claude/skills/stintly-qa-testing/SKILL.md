@@ -5,6 +5,28 @@ description: Use when manually testing Stintly in the browser (auth flow, dashbo
 
 # QA testing workflow
 
+## Which Supabase project — local/preview vs. production
+
+As of 2026-07-19 there are **two** Supabase projects, not one:
+
+- **`stintly-staging`** (ref `hpzndajoniogddljiuba`) — used by local dev
+  (`.env.local`) and is intended for Vercel Preview deployments too. This is
+  where all QA testing, seeding, and one-off debug scripts should run.
+- The original project (ref `nykcagvcpxrvjirzodgn`) — **production only**.
+  Never seed test data, run debug scripts, or recreate the QA account
+  against this one — it holds real user data now.
+
+Both need the same migrations applied (`supabase/migrations/`) — when you
+add a new migration, push it to both (`supabase db push --db-url <url>` or
+`--linked` after `supabase link --project-ref <ref>` for whichever project).
+They can drift in auth config: `stintly-staging` has `mailer_autoconfirm`
+and other auth settings copied from prod at creation time, but changes to
+one don't propagate to the other automatically.
+
+`.env.local` should always point at `stintly-staging` — get its anon/service
+role keys and DB pooler connection from the Supabase dashboard
+(Project Settings → API / Database) for that project, never production's.
+
 ## Fixed test account — always reuse it, never delete it
 
 ```
@@ -12,11 +34,13 @@ email:    qa@stintly.test
 password: StintlyQA!2026
 ```
 
-This user already exists in the real Supabase project (`auth.users`) and is
-email-confirmed. **Do not delete it, ever** — future sessions rely on it
-being there. If it's ever missing, recreate it exactly like this (anon
-client `signUp`, same shape the app itself uses, then confirm via SQL if
-"Confirm email" is on):
+This user exists in **both** Supabase projects (created independently in
+each — they don't share an `auth.users` table) and is email-confirmed in
+both. **Do not delete it, ever** — future sessions rely on it being there.
+If it's missing from whichever project you're pointed at (check
+`.env.local` / Vercel env vars to see which), recreate it exactly like this
+(anon client `signUp`, same shape the app itself uses, then confirm via SQL
+if "Confirm email" is on):
 
 ```bash
 node -e "
@@ -43,13 +67,19 @@ accounts using the developer's personal email or an alias of it.
 
 ## Direct DB access for test setup
 
-`DATABASE_URL` in `.env.local` is a real connection to the project's
-Supabase Postgres (via the session pooler). It's fine to run one-off `node
--e` scripts with the `postgres` package against it to seed or inspect state
-for a test (e.g. confirming a user's email, checking RLS policies applied,
-seeding a `teams` row for the QA user) — this project has no separate local/
-staging DB. Clean up anything you seed beyond the fixed QA user itself once
-the test is done.
+`DATABASE_URL` in `.env.local` is a real connection to the `stintly-staging`
+project's Postgres (via the session pooler) — see the project-split note
+above. It's fine to run one-off `node -e` scripts with the `postgres`
+package against it to seed or inspect state for a test (e.g. confirming a
+user's email, checking RLS policies applied, seeding a `teams` row for the
+QA user). Clean up anything you seed beyond the fixed QA user itself once
+the test is done. Never point a debug/seed script at the production
+project's `DATABASE_URL`.
+
+The direct-connection host (`db.<ref>.supabase.co`) has been unreliable on
+some networks (intermittent DNS resolution failures) — prefer the session
+pooler connection string (`aws-0-us-west-1.pooler.supabase.com:5432` for
+`stintly-staging`) for both `supabase db push` and ad hoc scripts.
 
 ## Running the app to test it
 

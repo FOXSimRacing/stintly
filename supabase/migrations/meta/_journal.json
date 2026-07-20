@@ -22,6 +22,20 @@
       "when": 1784478000000,
       "tag": "0002_fix_teams_select_policy",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784502405769,
+      "tag": "0003_motionless_scrambler",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784502405770,
+      "tag": "0004_admin_rls",
+      "breakpoints": true
     }
   ]
 }

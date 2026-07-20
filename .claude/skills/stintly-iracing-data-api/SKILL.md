@@ -107,7 +107,7 @@ follow-up work, not solved here.
 ## Env vars
 
 ```
-IRACING_USE_MOCK=              # true/false; unset = auto (mock only on a local dev machine, never on Vercel)
+IRACING_USE_MOCK=              # true/false; unset = auto (mock on local dev + Vercel Preview, never Production)
 IRACING_OAUTH_CLIENT_ID=
 IRACING_OAUTH_CLIENT_SECRET=
 IRACING_OAUTH_REDIRECT_URI=
@@ -124,24 +124,28 @@ because Vercel has no iRacing credentials configured yet with no explicit
 opt-out, since nothing consumes `lib/iracing` today; that case only errors
 if/when a future feature actually calls it.
 
-**Never let the mock run outside a developer's own machine.** MSW patches
-`fetch`/`http` globally for the *entire* Node.js process — not scoped to
-iRacing hosts — so any request, matched or not, goes through it, including
-unrelated ones like Supabase Auth calls from Server Actions. Both
-`instrumentation.ts` (`if (process.env.VERCEL) return;`) and
-`lib/iracing/env.ts` (`useMock` factors in `!isVercel`) independently refuse
-to activate the mock on Vercel, regardless of credential state — this is
-belt-and-suspenders on purpose after an incident where a missing Vercel
-guard broke login in preview/production. At the time, `onUnhandledRequest`
-was set to the `"error"` preset, which **rejects** any request without a
-matching handler — including the Supabase auth call, since only iRacing
-hosts have handlers. `instrumentation.ts` now uses a custom
-`onUnhandledRequest` callback instead: it only logs (`print.error()`) when
-the request's hostname is one of the iRacing hosts, so a real gap in mock
-coverage is still loud and visible, while every other request (Supabase,
-anything else) passes through untouched, exactly as if MSW weren't running
-— this is required even in normal local dev, not just as a Vercel
-safeguard.
+**Never let the mock run in production.** MSW patches `fetch`/`http`
+globally for the *entire* Node.js process — not scoped to iRacing hosts —
+so any request, matched or not, goes through it, including unrelated ones
+like Supabase Auth calls from Server Actions. Both `instrumentation.ts`
+(`if (process.env.VERCEL_ENV === "production") return;`) and
+`lib/iracing/env.ts` (`useMock` factors in `!isProductionVercel`)
+independently refuse to activate the mock in production, regardless of
+credential state — this is belt-and-suspenders on purpose. Preview
+deployments and local dev *are* allowed to mock (as of 2026-07-19, once
+local dev and Preview started pointing at a separate staging Supabase
+project instead of sharing production's — see the `stintly-qa-testing`
+skill) — this used to be blocked on all of Vercel after an incident where a
+missing environment guard broke login in preview/production. At the time,
+`onUnhandledRequest` was set to the `"error"` preset, which **rejects** any
+request without a matching handler — including the Supabase auth call,
+since only iRacing hosts have handlers. `instrumentation.ts` now uses a
+custom `onUnhandledRequest` callback instead: it only logs (`print.error()`)
+when the request's hostname is one of the iRacing hosts, so a real gap in
+mock coverage is still loud and visible, while every other request
+(Supabase, anything else) passes through untouched, exactly as if MSW
+weren't running — this is what actually makes preview mocking safe now,
+and is required even in normal local dev, not just as a safeguard.
 
 ## Cutover: switching from mock to the real API
 

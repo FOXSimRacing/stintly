@@ -184,6 +184,18 @@ export const stints = pgTable("stints", {
   notes: text("notes"),
 }).enableRLS();
 
+// Platform-level role, separate from team_member_role — grants access to
+// the /admin area (all-users listing, invite-to-test flow) independent of
+// any team membership.
+export const admins = pgTable("admins", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => authUsers.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+}).enableRLS();
+
 export const invites = pgTable("invites", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   teamId: uuid("team_id")
