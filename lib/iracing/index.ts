@@ -3,9 +3,11 @@
 export { getMemberSummary } from "./services/member";
 export { getTrack, getCar } from "./services/reference";
 export { getSubsessionResult } from "./services/results";
+export { getUpcomingEnduranceRaces } from "./services/calendar";
 
 export type { MemberSummary } from "./schemas/member";
 export type { Track, Car } from "./schemas/reference";
 export type { SubsessionResult } from "./schemas/results";
+export type { EnduranceRace } from "./schemas/calendar";
 
 export { IracingAuthError, IracingApiError } from "./errors";

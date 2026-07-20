@@ -61,11 +61,12 @@ directly.
 | `getTrack(trackId)` | `/data/track/get` | `tracks.iracingTrackId` |
 | `getCar(carId)` | `/data/car/get` | `cars.iracingCarId` |
 | `getSubsessionResult(subsessionId)` | `/data/results/get` | (future results-import feature — no table yet) |
+| `getUpcomingEnduranceRaces()` | `/data/season/race_guide` | dashboard "upcoming endurance races" card, informational only — not joined to any table |
 
-Other Data API domains (season/series, league, hosted, time_attack,
-stats-by-category, etc.) are **not** mocked — out of scope until a feature
-actually needs them. Add a new `schemas/`, `services/`, and
-`mocks/iracing/handlers/` file per new domain, following the same pattern.
+Other Data API domains (league, hosted, time_attack, stats-by-category,
+etc.) are **not** mocked — out of scope until a feature actually needs them.
+Add a new `schemas/`, `services/`, and `mocks/iracing/handlers/` file per new
+domain, following the same pattern.
 
 ## The link-indirection pattern
 
@@ -146,6 +147,20 @@ mock coverage is still loud and visible, while every other request
 (Supabase, anything else) passes through untouched, exactly as if MSW
 weren't running — this is what actually makes preview mocking safe now,
 and is required even in normal local dev, not just as a safeguard.
+
+## Dev-mode gotcha: Fast Refresh silently breaks the mock
+
+`register()` in `instrumentation.ts` only runs once per **server process**,
+patching `fetch` globally via MSW. Turbopack's Fast Refresh recompiles an
+edited route/module in place without restarting that process — so after
+editing anything under `lib/iracing/`, `mocks/iracing/`, or a route handler
+that imports `@/lib/iracing`, requests silently stop being mocked and hit the
+real `oauth.iracing.com`/`members-ng.iracing.com` hosts instead (which
+respond, just not with fixture data — e.g. a real 405 from the real OAuth
+endpoint, easy to mistake for a bug in the mock). **Fully restart `npm run
+dev`** (stop the process, start it again — not just save-triggered
+hot-reload) after editing any file in that dependency chain before trusting
+a request against the mock again.
 
 ## Cutover: switching from mock to the real API
 
