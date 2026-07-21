@@ -36,6 +36,13 @@
       "when": 1784502405770,
       "tag": "0004_admin_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784596819167,
+      "tag": "0005_true_bishop",
+      "breakpoints": true
     }
   ]
 }

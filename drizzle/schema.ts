@@ -150,6 +150,23 @@ export const races = pgTable("races", {
     .defaultNow(),
 }).enableRLS();
 
+export const raceDrivers = pgTable(
+  "race_drivers",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    raceId: uuid("race_id")
+      .notNull()
+      .references(() => races.id, { onDelete: "cascade" }),
+    driverId: uuid("driver_id")
+      .notNull()
+      .references(() => drivers.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [uniqueIndex("race_drivers_race_driver_idx").on(table.raceId, table.driverId)],
+).enableRLS();
+
 export const stintPlans = pgTable("stint_plans", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   raceId: uuid("race_id")

@@ -10,6 +10,7 @@ export const enduranceRaceGuideFixture = [
     track: { track_id: 50002, track_name: "Spa-Francorchamps" },
     start_time: "2026-08-15T13:00:00Z",
     duration_minutes: 1440,
+    allowed_classes: ["GT3"],
   },
   {
     series_id: 80002,
@@ -17,6 +18,7 @@ export const enduranceRaceGuideFixture = [
     track: { track_id: 50001, track_name: "Road Atlanta" },
     start_time: "2026-09-12T18:00:00Z",
     duration_minutes: 600,
+    allowed_classes: ["GT3", "LMP2", "LMP3"],
   },
   {
     series_id: 80003,
@@ -24,6 +26,7 @@ export const enduranceRaceGuideFixture = [
     track: { track_id: 50005, track_name: "Nürburgring Combined" },
     start_time: "2026-10-03T14:00:00Z",
     duration_minutes: 1440,
+    allowed_classes: ["GT3"],
   },
   {
     series_id: 80004,
@@ -31,6 +34,7 @@ export const enduranceRaceGuideFixture = [
     track: { track_id: 50006, track_name: "Sebring International Raceway" },
     start_time: "2026-11-07T15:00:00Z",
     duration_minutes: 720,
+    allowed_classes: ["GT3", "LMP2", "LMP3"],
   },
   {
     series_id: 80005,
@@ -38,5 +42,6 @@ export const enduranceRaceGuideFixture = [
     track: { track_id: 50004, track_name: "Daytona International Speedway" },
     start_time: "2027-01-24T18:00:00Z",
     duration_minutes: 1440,
+    allowed_classes: ["GT3"],
   },
 ];

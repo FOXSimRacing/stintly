@@ -9,6 +9,7 @@ export const enduranceRaceSchema = z.object({
   }),
   start_time: z.string(),
   duration_minutes: z.number(),
+  allowed_classes: z.array(z.string()),
 });
 
 export const enduranceRaceGuideSchema = z.array(enduranceRaceSchema);
