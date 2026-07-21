@@ -45,7 +45,7 @@ export default async function AppLayout({
         version={packageJson.version}
       />
       <SidebarInset>
-        <main className="flex flex-1 flex-col p-6">{children}</main>
+        <main className="flex min-w-0 flex-1 flex-col p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
