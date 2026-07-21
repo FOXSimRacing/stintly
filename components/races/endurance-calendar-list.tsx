@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { EnduranceRace } from "@/lib/iracing";
 
@@ -24,9 +25,10 @@ export function EnduranceCalendarList({ races }: { races: EnduranceRace[] }) {
           </p>
         ) : (
           races.map((race) => (
-            <div
+            <Link
               key={race.series_id}
-              className="flex flex-col gap-0.5 rounded-lg px-3 py-2 ring-1 ring-foreground/10"
+              href={`/races/setup/${race.series_id}`}
+              className="flex flex-col gap-0.5 rounded-lg px-3 py-2 ring-1 ring-foreground/10 transition-colors hover:bg-foreground/5"
             >
               <span className="text-sm font-medium">{race.series_name}</span>
               <span className="text-xs text-muted-foreground">
@@ -36,7 +38,7 @@ export function EnduranceCalendarList({ races }: { races: EnduranceRace[] }) {
                 {dateFormatter.format(new Date(race.start_time))} ·{" "}
                 {formatDuration(race.duration_minutes)}
               </span>
-            </div>
+            </Link>
           ))
         )}
       </CardContent>
