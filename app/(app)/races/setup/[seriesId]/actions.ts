@@ -3,9 +3,10 @@
 import { redirect } from "next/navigation";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { cars, drivers, raceDrivers, races, stintPlans, teamMembers, tracks } from "@/drizzle/schema";
+import { cars, drivers, raceDrivers, races, stintPlans, stints, teamMembers, tracks } from "@/drizzle/schema";
 import { createClient } from "@/lib/supabase/server";
 import { getUpcomingEnduranceRaces } from "@/lib/iracing";
+import { generateDefaultStints } from "@/lib/stint-timeline/generate-default-stints";
 import {
   createRaceFromCalendarEventSchema,
   type CreateRaceFromCalendarEventInput,
@@ -75,12 +76,35 @@ export async function createRaceFromCalendarEvent(
       .insert(raceDrivers)
       .values(driverIds.map((driverId) => ({ raceId: race.id, driverId })));
 
-    await tx.insert(stintPlans).values({
-      raceId: race.id,
-      name: "Plano inicial",
-      status: "draft",
-      createdBy: user.id,
+    const [stintPlan] = await tx
+      .insert(stintPlans)
+      .values({
+        raceId: race.id,
+        name: "Plano inicial",
+        status: "draft",
+        createdBy: user.id,
+      })
+      .returning({ id: stintPlans.id });
+
+    // driverIds here is form-submission order, not the alphabetical order
+    // getRosterForRace uses for the retroactive "gerar sugestão" action —
+    // intentionally different, not a bug to reconcile.
+    const generatedStints = generateDefaultStints({
+      raceStartUtc: new Date(event.start_time),
+      totalDurationMinutes: event.duration_minutes,
+      driverIds,
     });
+    if (generatedStints.length > 0) {
+      await tx.insert(stints).values(
+        generatedStints.map((stint, index) => ({
+          stintPlanId: stintPlan.id,
+          driverId: stint.driverId,
+          orderIndex: index,
+          plannedStartTime: stint.plannedStartTime,
+          plannedEndTime: stint.plannedEndTime,
+        })),
+      );
+    }
 
     return race.id;
   });

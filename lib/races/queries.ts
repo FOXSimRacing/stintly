@@ -4,6 +4,7 @@ import { cars, races, teamMembers, tracks } from "@/drizzle/schema";
 
 const raceSelection = {
   id: races.id,
+  teamId: races.teamId,
   name: races.name,
   eventClass: races.eventClass,
   startTimeUtc: races.startTimeUtc,
@@ -11,6 +12,9 @@ const raceSelection = {
   status: races.status,
   trackName: tracks.name,
   carName: cars.name,
+  // Role of the requesting user (from the teamMembers join below) — lets
+  // callers gate edit UI without a second query.
+  role: teamMembers.role,
 };
 
 function raceQuery() {
